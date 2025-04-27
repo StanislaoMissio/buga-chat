@@ -2,10 +2,11 @@ package com.github.bugachat.commom
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
+import com.github.bugachat.BuildConfig
+import com.github.bugachat.commom.Constants.SHA_STRING
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -19,14 +20,12 @@ object GoogleSignInConfiguration {
 
         val credentialManager = CredentialManager.create(context)
 
-        val rawNonce = UUID.randomUUID().toString()
-        val bytes = rawNonce.toByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(bytes)
+        val digest =
+            MessageDigest.getInstance(SHA_STRING).digest(UUID.randomUUID().toString().toByteArray())
         val hashedNonce = digest.fold("") { str, it -> str + "%02x".format(it) }
 
         val googleIdOptions = GetGoogleIdOption.Builder()
-            .setServerClientId("")
+            .setServerClientId(BuildConfig.OAUTH_CLIENT_ID)
             .setNonce(hashedNonce)
             .setFilterByAuthorizedAccounts(false)
             .build()
@@ -43,15 +42,10 @@ object GoogleSignInConfiguration {
                 val googleIdToken = googleIdTokenCredential.idToken
 
                 Log.d("GoogleSignInButton", "Google ID Token: $googleIdToken")
-
-                Toast.makeText(context, "Google ID Token: $googleIdToken", Toast.LENGTH_SHORT)
-                    .show()
             } catch (e: GetCredentialException) {
                 Log.e("GoogleSignInButton", "Error getting Google ID token", e)
-                Toast.makeText(context, "Error getting Google ID token", Toast.LENGTH_SHORT).show()
             } catch (e: GoogleIdTokenParsingException) {
                 Log.e("GoogleSignInButton", "Error parsing Google ID token", e)
-                Toast.makeText(context, "Error parsing Google ID token", Toast.LENGTH_SHORT).show()
             }
         }
 

@@ -1,3 +1,5 @@
+import java.util.*
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -26,6 +28,11 @@ android {
 
     }
 
+    val properties = Properties().apply {
+        rootProject.file("local.properties").reader().use(::load)
+    }
+    val oathAuthId = properties.getProperty("oath_client_id") as String
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -35,6 +42,7 @@ android {
             )
         }
         debug {
+            buildConfigField("String", "OAUTH_CLIENT_ID", "\"$oathAuthId\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -73,3 +81,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
+
+android.buildFeatures.buildConfig = true
